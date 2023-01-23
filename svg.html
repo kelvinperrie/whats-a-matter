@@ -3,9 +3,13 @@
 <html>
     <head>
         <title>fff</title>
-        <script src="scripts/pathseg.js"></script>
+        <!-- <script src="scripts/pathseg.js"></script>
         <script src="scripts/decomp.min.js"></script>
-        <script src="scripts/matter.min.js"></script>
+        <script src="scripts/matter.min.js"></script> -->
+
+        <script src="https://cdn.jsdelivr.net/npm/pathseg@1.2.1/pathseg.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/poly-decomp@0.3.0/build/decomp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.js"></script>
     </head>
     <body>
 
@@ -62,16 +66,26 @@ Example.svg = function() {
         };
 
         ([
-            'https://whats-a-matter.vercel.app/images/frame1.svg', 
+            // 'https://whats-a-matter.vercel.app/images/frame1.svg', 
+            'https://whats-a-matter.vercel.app/images/water.svg', 
             'https://whats-a-matter.vercel.app/images/iconmonstr-paperclip-2-icon.svg',
             'https://whats-a-matter.vercel.app/images/iconmonstr-puzzle-icon.svg',
             'https://whats-a-matter.vercel.app/images/iconmonstr-user-icon.svg'
         ]).forEach(function(path, i) { 
             loadSvg(path).then(function(root) {
+                console.log(path);
+
                 var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
 
+                //console.log(Svg.pathToVertices(path, 30));
+
+                // var vertexSets = select(root, 'path')
+                //     .map(function(path) { return Vertices.scale(Svg.pathToVertices(path, 30), 0.4, 0.4); });
+
                 var vertexSets = select(root, 'path')
-                    .map(function(path) { return Vertices.scale(Svg.pathToVertices(path, 30), 0.4, 0.4); });
+                    .map(function(path) { return Svg.pathToVertices(path, 30); });
+                
+                console.log(vertexSets);
 
                 Composite.add(world, Bodies.fromVertices(100 + i * 150, 200 + i * 50, vertexSets, {
                     render: {
