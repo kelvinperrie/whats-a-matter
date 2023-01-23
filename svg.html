@@ -65,37 +65,40 @@ Example.svg = function() {
                 .then(function(raw) { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
         };
 
-        ([
-            // 'https://whats-a-matter.vercel.app/images/frame1.svg', 
-            'https://whats-a-matter.vercel.app/images/water.svg', 
-            'https://whats-a-matter.vercel.app/images/iconmonstr-paperclip-2-icon.svg',
-            'https://whats-a-matter.vercel.app/images/iconmonstr-puzzle-icon.svg',
-            'https://whats-a-matter.vercel.app/images/iconmonstr-user-icon.svg'
-        ]).forEach(function(path, i) { 
-            loadSvg(path).then(function(root) {
-                console.log(path);
+        // ([
+        //     // 'https://whats-a-matter.vercel.app/images/frame1.svg', 
+        //     'https://whats-a-matter.vercel.app/images/water.svg', 
+        //     'https://whats-a-matter.vercel.app/images/iconmonstr-paperclip-2-icon.svg',
+        //     'https://whats-a-matter.vercel.app/images/iconmonstr-puzzle-icon.svg',
+        //     'https://whats-a-matter.vercel.app/images/iconmonstr-user-icon.svg'
+        // ]).forEach(function(path, i) { 
+        //     loadSvg(path).then(function(root) {
+        //         console.log(path);
 
-                var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
+        //         var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
 
-                //console.log(Svg.pathToVertices(path, 30));
+        //         //console.log(Svg.pathToVertices(path, 30));
 
-                // var vertexSets = select(root, 'path')
-                //     .map(function(path) { return Vertices.scale(Svg.pathToVertices(path, 30), 0.4, 0.4); });
+        //         var vertexSets = select(root, 'path')
+        //             .map(function(path) { return Vertices.scale(Svg.pathToVertices(path, 30), 0.4, 0.4); });
 
-                var vertexSets = select(root, 'path')
-                    .map(function(path) { return Svg.pathToVertices(path, 30); });
+        //         // var vertexSets = select(root, 'path')
+        //         //     .map(function(path) { return Svg.pathToVertices(path, 30); });
                 
-                console.log(vertexSets);
+        //         console.log(vertexSets);
 
-                Composite.add(world, Bodies.fromVertices(100 + i * 150, 200 + i * 50, vertexSets, {
-                    render: {
-                        fillStyle: color,
-                        strokeStyle: color,
-                        lineWidth: 1
-                    }
-                }, true));
-            });
-        });
+        //         var body = Bodies.fromVertices(100 + i * 150, 200 + i * 50, vertexSets, {
+        //             render: {
+        //                 fillStyle: color,
+        //                 strokeStyle: color,
+        //                 lineWidth: 1
+        //             }
+        //         }, true)
+        //         //Matter.Body.setStatic(body, true);
+
+        //         Composite.add(world, body);
+        //     });
+        // });
 
         loadSvg('https://whats-a-matter.vercel.app/images/svg.svg').then(function(root) {
             var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
@@ -103,13 +106,23 @@ Example.svg = function() {
             var vertexSets = select(root, 'path')
                 .map(function(path) { return Svg.pathToVertices(path, 30); });
 
-            Composite.add(world, Bodies.fromVertices(400, 80, vertexSets, {
+
+
+            var body = Bodies.fromVertices(400, 300, vertexSets, {
                 render: {
                     fillStyle: color,
                     strokeStyle: color,
                     lineWidth: 1
                 }
-            }, true));
+            }, true)
+
+            Matter.Body.setAngle(body, 0.5);    // how rotated it is
+            Matter.Body.setAngularVelocity(body, .1); // how fast it is spinning
+            Matter.Body.setVelocity(body, { x: 0, y: -10 });
+
+            
+
+            Composite.add(world, body);
         });
     } else {
         Common.warn('Fetch is not available. Could not load SVG.');
