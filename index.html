@@ -30,6 +30,9 @@
             .value-display {
                 font-size: 1.5em;
             }
+            .control-key {
+                color: #9F9C99;
+            }
             .indent {
                 margin-left: 40px;
             }
@@ -42,15 +45,16 @@
         <div id="text">
             When you click it will create a circle.<br/>
             Cool.<br/>
-            If you want you can turn on autocreation by pressing space. Currently it is <span class="value-display" id="autoCreationDisplay">??</span> <br/>
+            If you want you can turn on autocreation by pressing <span class="control-key">space</span>. Currently it is <span class="value-display" id="autoCreationDisplay">??</span> <br/>
             This will create a circle where the mouse is; currently every <span class="value-display" id="speedDisplay">??</span> milliseconds. 
             <div class="indent">
-                To speed it up press A. To slow it down press Z.<br/>
+                To speed it up press <span class="control-key">A</span>. To slow it down press <span class="control-key">Z</span>.<br/>
             </div>
             The size of the circle is currently <span class="value-display" id="sizeDisplay">??</span>. 
             <div class="indent">
-                To increase it press S. To decrease it press X.
+                To increase it press <span class="control-key">S</span>. To decrease it press <span class="control-key">X</span>.
             </div>
+            It can change the colour slightly every time. <span class="value-display" id="colourChangeDisplay">??</span> this by pressing <span class="control-key">C</span>.
         </div>
         <script>
 
@@ -70,6 +74,9 @@
             var groundHeight = 1000;    // if we make the ground really thick, then when resizing the window our objects should stay on screen rather than popping below the ground
             var bodySize = 15;
             var autoCreationActive = false;
+            //var currentColourHsl = { h : 120, s : 77, l : 85 };
+            var currentColourHsl = { h : 120, s : 69, l : 52 };
+            var changeColoursActive = true;
 
             (function() {
 
@@ -117,9 +124,12 @@
 
 
             function MakeCircle(xPos, yPos) {
+
+                let colourHex = HSLToHex(currentColourHsl.h, currentColourHsl.s, currentColourHsl.l);
+
                 var circleA = Bodies.circle(xPos, yPos, bodySize, {
                 render: {
-                    fillStyle: '#30D930', // 3C8BC5
+                    fillStyle: colourHex
                     //lineWidth: 3
                 }
                 });
@@ -127,8 +137,18 @@
                 Matter.World.add(engine.world, [
                     circleA
                 ]);
+
+                if(changeColoursActive) {
+                    CycleTheColour();
+                }
             }
-            // MakeCircle(145, 38)
+
+            function CycleTheColour() {
+                let currentH = currentColourHsl.h;
+                currentH+=2;
+                if(currentH >= 360) currentH = 0;
+                currentColourHsl.h = currentH;
+            }
 
             function MakeCirlceAtCurrentPosition() {
                 if(mousePosition.x === null || mousePosition.y === null) 
@@ -168,6 +188,9 @@
                     if(event.keyCode === 32) {
                         toggleAutoCreation();
                     }
+                    if(event.keyCode === 67) {
+                        toggleColourChange();
+                    }
                 };
             })();
 
@@ -189,8 +212,7 @@
                 document.getElementById('speedDisplay').innerHTML = creationTimeDelay;
                 document.getElementById('sizeDisplay').innerHTML = bodySize;
                 document.getElementById('autoCreationDisplay').innerHTML = autoCreationActive === true ? "active" : "disabled";
-                console.log(autoCreationActive);
-                console.log(autoCreationActive==true);
+                document.getElementById('colourChangeDisplay').innerHTML = changeColoursActive === true ? "Stop" : "Start";
             }
             UpdateDisplay();
 
@@ -204,6 +226,12 @@
                 UpdateDisplay();
             }
 
+            function toggleColourChange() {
+                changeColoursActive = !changeColoursActive;
+                UpdateDisplay();
+            }
+
+
             function toggleAutoCreation() {
                 autoCreationActive = !autoCreationActive;
                 UpdateDisplay();
@@ -216,6 +244,98 @@
                 setTimeout(function() { CreationLoop() }, creationTimeDelay);
             };
             CreationLoop()
+
+
+
+
+
+
+
+            //https://css-tricks.com/converting-color-spaces-in-javascript/
+            function hexToHSL(H) {
+                // Convert hex to RGB first
+                let r = 0, g = 0, b = 0;
+                if (H.length == 4) {
+                    r = "0x" + H[1] + H[1];
+                    g = "0x" + H[2] + H[2];
+                    b = "0x" + H[3] + H[3];
+                } else if (H.length == 7) {
+                    r = "0x" + H[1] + H[2];
+                    g = "0x" + H[3] + H[4];
+                    b = "0x" + H[5] + H[6];
+                }
+                // Then to HSL
+                r /= 255;
+                g /= 255;
+                b /= 255;
+                let cmin = Math.min(r,g,b),
+                    cmax = Math.max(r,g,b),
+                    delta = cmax - cmin,
+                    h = 0,
+                    s = 0,
+                    l = 0;
+
+                if (delta == 0)
+                    h = 0;
+                else if (cmax == r)
+                    h = ((g - b) / delta) % 6;
+                else if (cmax == g)
+                    h = (b - r) / delta + 2;
+                else
+                    h = (r - g) / delta + 4;
+
+                h = Math.round(h * 60);
+
+                if (h < 0)
+                    h += 360;
+
+                l = (cmax + cmin) / 2;
+                s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+                s = +(s * 100).toFixed(1);
+                l = +(l * 100).toFixed(1);
+
+                return "hsl(" + h + "," + s + "%," + l + "%)";
+            }
+
+            function HSLToHex(h,s,l) {
+                s /= 100;
+                l /= 100;
+
+                let c = (1 - Math.abs(2 * l - 1)) * s,
+                    x = c * (1 - Math.abs((h / 60) % 2 - 1)),
+                    m = l - c/2,
+                    r = 0,
+                    g = 0, 
+                    b = 0; 
+
+                if (0 <= h && h < 60) {
+                    r = c; g = x; b = 0;
+                } else if (60 <= h && h < 120) {
+                    r = x; g = c; b = 0;
+                } else if (120 <= h && h < 180) {
+                    r = 0; g = c; b = x;
+                } else if (180 <= h && h < 240) {
+                    r = 0; g = x; b = c;
+                } else if (240 <= h && h < 300) {
+                    r = x; g = 0; b = c;
+                } else if (300 <= h && h < 360) {
+                    r = c; g = 0; b = x;
+                }
+                // Having obtained RGB, convert channels to hex
+                r = Math.round((r + m) * 255).toString(16);
+                g = Math.round((g + m) * 255).toString(16);
+                b = Math.round((b + m) * 255).toString(16);
+
+                // Prepend 0s, if necessary
+                if (r.length == 1)
+                    r = "0" + r;
+                if (g.length == 1)
+                    g = "0" + g;
+                if (b.length == 1)
+                    b = "0" + b;
+
+                return "#" + r + g + b;
+                }
         </script>
     </body>
 </html>
